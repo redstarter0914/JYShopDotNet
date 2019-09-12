@@ -1,0 +1,86 @@
+sudo chmod  777 /etc/squid
+
+
+sudo add-apt-repository ppa:webupd8team/java
+sudo apt install oracle-java8-installer
+wget -q -O - https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo apt-key add -
+sudo apt-add-repository "deb https://pkg.jenkins.io/debian-stable binary/"
+sudo apt install jenkins
+sudo systemctl start jenkins
+sudo systemctl status jenkins
+sudo ufw allow 8080
+sudo ufw status
+sudo ufw allow OpenSSH
+sudo ufw enable
+sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+
+vim /etc/sysconfig/jenkins 
+
+//添加Java地址
+
+vim /etc/init.d/jenkins
+vim /etc/sysconfig/iptables
+查看是否监听端口(如果配置了自己定义的端口，需要先访问该端口一次才能看到监听)
+netstat -ntlp
+//重启防火墙配置（不重启端口还是无法生效）
+service iptables restart
+
+重启Jenkies
+
+//xxx:8080 是搭建Jenkins服务器地址
+http://xxx:8080/restart
+重新加载配置信息
+http://localhost:8080/reload
+
+
+sudo apt install maven
+mvn -version
+
+
+
+sudo apt install tomcat8
+sudo apt install tomcat8-admin
+
+<role rolename="manager-gui"/>
+<role rolename="manager-script"/>
+                    <user username="admin" password="password" roles="manager-gui,manager-script" />
+<Context path="" docBase="war_name" debug="0" reloadable="true"></Context>
+
+sudo service tomcat8 start
+sudo service tomcat8-admin start
+
+
+配置jenkins访问github repository的权限
+生成jenkins的ssh秘钥：
+sudo su jenkins
+ssh-keygen
+cat /var/lib/jenkins/.ssh/id_rsa.pub
+复制公钥在剪贴板上。github->repository->settings->deploy keys->add deploy key->将公钥粘贴上去cat /var/lib/jenkins/.ssh/id_rsa.pub复制私钥在剪切板上jenkins->凭据->系统->全局凭据->添加凭据->选择ssh,将私钥粘贴上去,命名为github-key现在jenkins可以通过github-key访问github repository配置jenkins访问tomcat的权限jenkins->凭据->系统->全局凭据->添加凭据->选择username,将上面配置tomcat时用的username和password写上去,命名为tomcat-key现在jenkins可以通过tomcat-key访问tomcat新建Maven任务jenkins中 新建任务->选择Maven任务Source Code Management选择git，填写repository的地址，使用github-keyBuild中将pom的相对路径写进去Post-build Actions中将tomcat的信息写进去注：nginx反向代理和spring security redirect会冲突，需要解决jenkins中如果配置maven为默认行为，多次build源代码没变的话可能不执行clean，可能会出现已改名的文件仍然在target中，导致有多个matching bean对应一个qualifying bean，报错，最后容器启动失败。
+
+
+
+查看Java相关的包信息： 
+ rpm -qa|grep java （或rpm -qa|grep jdk，rpm安装后，包名里没有Java）
+卸载 
+yum -y remove java [包名] 
+例如 
+yum –y remove java java-1.8.0-openjdk-1.8.0.131-3.b12.el7_3.x86_64 
+
+jdk 卸载方法 https://blog.csdn.net/xyj0808xyj/article/details/52444694
+
+//解压到指定目录
+tar -zxvf jdk-8u181-linux-x64.tar.gz -C /opt/
+
+//编辑配置文件
+vim /etc/profile
+
+export JAVA_HOME=/opt/jdk1.8.0_181
+export PATH=$JAVA_HOME/bin:$PATH
+export CLASSPATH=.:$JAVA_HOME/lib:$JAVA_HOME/jre/lib:$CLASSPATH 
+  
+//更新配置文件
+source /etc/profile
+
+
+
+
